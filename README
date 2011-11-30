@@ -1,0 +1,8 @@
+View Postgresql statistics for Dynacase contexts database.
+
+Installation
+------------
+
+- Copy the `pgsize.php' script under the contexts `admin' subdir
+- Browse to http://.../admin/pgsize.php
+
