@@ -70,7 +70,10 @@ function show_query(&$conn, &$query, &$parms) {
     }
   }
 
-  $res = pg_query($conn, sprintf("%s %s", $query, pg_escape_string($add)));
+  $res = pg_prepare($conn, 'select', sprintf("%s %s", $query, pg_escape_string($add)));
+  if( $res !== false ) {
+    $res = pg_execute($conn, 'select', array());
+  }
   if( $res === false ) {
     print '<div class="error">';
     print htmlspecialchars(pg_last_error($conn));
