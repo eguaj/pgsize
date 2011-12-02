@@ -29,6 +29,8 @@ if( $conn === false ) {
 
 $query = array();
 
+$query['pg_settings'] = sprintf("SELECT name, setting, context, short_desc FROM pg_settings");
+
 $query['tables'] = sprintf("SELECT s.schemaname, s.relname, c.oid, c.relfilenode, s.seq_scan, s.idx_scan, c.relpages as pages FROM pg_stat_all_tables as s, pg_class as c WHERE s.relname = c.relname AND s.schemaname IN (SELECT nspname FROM pg_namespace WHERE oid = c.relnamespace) AND ( s.schemaname = 'public' OR s.schemaname = 'pg_toast' )");
 
 $query['indexes'] = sprintf("SELECT s.schemaname, s.relname, s.indexrelname,  c.oid, c.relfilenode, c.relpages as pages FROM pg_stat_all_indexes as s, pg_class as c WHERE s.indexrelname = c.relname AND s.schemaname IN (SELECT nspname FROM pg_namespace WHERE oid = c.relnamespace) AND ( s.schemaname = 'public' OR s.schemaname = 'pg_toast' )");
