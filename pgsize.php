@@ -1,5 +1,8 @@
 <html>
 <head>
+<?php
+print sprintf("<title>%s</title>", isset($_GET['q'])?htmlspecialchars($_GET['q']):'pgsize');
+?>
 <style type="text/css">
 body {
   font-family: monospace;
@@ -31,9 +34,17 @@ $query = array();
 
 $query['pg_settings'] = sprintf("SELECT name, setting, context, short_desc FROM pg_settings");
 
-$query['tables'] = sprintf("SELECT s.schemaname, s.relname, c.oid, c.relfilenode, s.seq_scan, s.idx_scan, c.relpages as pages FROM pg_stat_all_tables as s, pg_class as c WHERE s.relname = c.relname AND s.schemaname IN (SELECT nspname FROM pg_namespace WHERE oid = c.relnamespace) AND ( s.schemaname = 'public' OR s.schemaname = 'pg_toast' )");
+$query['pg_stat_activity'] = sprintf("SELECT datname, procpid, client_addr, client_port, waiting, query_start, now() - query_start AS time, current_query FROM pg_stat_activity WHERE procpid != pg_backend_pid()");
 
-$query['indexes'] = sprintf("SELECT s.schemaname, s.relname, s.indexrelname,  c.oid, c.relfilenode, c.relpages as pages FROM pg_stat_all_indexes as s, pg_class as c WHERE s.indexrelname = c.relname AND s.schemaname IN (SELECT nspname FROM pg_namespace WHERE oid = c.relnamespace) AND ( s.schemaname = 'public' OR s.schemaname = 'pg_toast' )");
+$query['tables'] = sprintf("SELECT s.schemaname, s.relname, c.oid, c.relfilenode, s.seq_scan, s.idx_scan, c.reltuples, c.relpages as pages FROM pg_stat_all_tables as s, pg_class as c WHERE s.relname = c.relname AND s.schemaname IN (SELECT nspname FROM pg_namespace WHERE oid = c.relnamespace) AND ( s.schemaname = 'public' OR s.schemaname = 'pg_toast' )");
+
+$query['tables I/O'] = sprintf("SELECT schemaname, relname, heap_blks_read, heap_blks_hit, idx_blks_read, idx_blks_hit, toast_blks_read, toast_blks_hit, tidx_blks_read, tidx_blks_hit FROM pg_statio_all_tables WHERE schemaname IN ('public', 'pg_toast')");
+
+$query['indexes'] = sprintf("SELECT s.schemaname, s.relname, s.indexrelname,  c.oid, c.relfilenode, s.idx_scan, s.idx_tup_read, s.idx_tup_fetch, c.reltuples, c.relpages as pages FROM pg_stat_all_indexes as s, pg_class as c WHERE s.indexrelname = c.relname AND s.schemaname IN (SELECT nspname FROM pg_namespace WHERE oid = c.relnamespace) AND ( s.schemaname = 'public' OR s.schemaname = 'pg_toast' )");
+
+$query['indexes I/O'] = sprintf("SELECT schemaname, relname, indexrelname, idx_blks_read, idx_blks_hit FROM pg_statio_all_indexes WHERE schemaname IN ('public', 'pg_toast')");
+
+$query['vacuums'] = sprintf("SELECT s.schemaname, s.relname, c.reltuples, s.n_tup_ins, s.n_tup_upd, s.n_tup_del, s.n_tup_hot_upd, s.n_live_tup, s.n_dead_tup, s.last_vacuum, s.last_autovacuum FROM pg_stat_all_tables as s, pg_class as c WHERE s.relname = c.relname AND s.schemaname IN (SELECT nspname FROM pg_namespace WHERE oid = c.relnamespace) AND ( s.schemaname = 'public' OR s.schemaname = 'pg_toast' )");
 
 $query['pg_buffercache'] = sprintf("SELECT c.relname, count(*) AS pages FROM pg_buffercache b INNER JOIN pg_class c ON b.relfilenode = c.relfilenode AND b.reldatabase IN (0, (SELECT oid FROM pg_database WHERE datname = current_database())) GROUP BY c.relname");
 
